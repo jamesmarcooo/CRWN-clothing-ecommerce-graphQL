@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
+
 import { gql, useQuery } from '@apollo/client';
 
 export const CategoriesContext = createContext({
@@ -6,7 +7,7 @@ export const CategoriesContext = createContext({
 });
 
 const COLLECTIONS = gql`
-  query {
+  query GetCollections {
     collections {
       id
       title
@@ -21,23 +22,22 @@ const COLLECTIONS = gql`
 `;
 
 export const CategoriesProvider = ({ children }) => {
-  const { loading, error, data } = useQuery(COLLECTIONS);
   const [categoriesMap, setCategoriesMap] = useState({});
+  const { loading, error, data } = useQuery(COLLECTIONS);
 
   useEffect(() => {
     if (data) {
       const { collections } = data;
-      const collectionMap = collections.reduce((acc, collection) => {
+      const collectionsMap = collections.reduce((acc, collection) => {
         const { title, items } = collection;
         acc[title.toLowerCase()] = items;
         return acc;
-      });
-
-      setCategoriesMap(collectionMap);
+      }, {});
+      setCategoriesMap(collectionsMap);
     }
   }, [data]);
 
-  const value = { categoriesMap };
+  const value = { categoriesMap, loading, error };
   return (
     <CategoriesContext.Provider value={value}>
       {children}
